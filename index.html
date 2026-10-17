@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Forensic Evidence Locker - Secure Evidence Vault</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- SITE HEADER & NAVIGATION -->
+  <header class="site-header">
+    <div class="header-container">
+      <div>
+        <div class="brand-title">
+          Forensic Evidence Locker <span class="badge">Page 1 of 2</span>
+        </div>
+        <div class="brand-desc">
+          Cyber Forensics Lab Project: Cryptographic File Integrity &amp; Storage
+        </div>
+      </div>
+      <nav class="main-nav">
+        <a href="index.html" class="nav-link active">Evidence Locker</a>
+        <a href="chain-of-custody.html" class="nav-link">Chain of Custody Log →</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page-container">
+    <!-- PAGE TITLE -->
+    <div class="page-intro">
+      <h1>Digital Evidence Vault</h1>
+      <p>
+        Upload forensic files, automatically generate SHA-256 cryptographic hashes, and verify evidence integrity to detect tampering.
+      </p>
+    </div>
+
+    <!-- SECTION 1: UPLOAD & AUTOMATIC HASHING -->
+    <section class="card">
+      <h2 class="card-title">1. Upload Evidence File</h2>
+      <p class="card-subtitle">
+        Select any file from your computer (disk image, log file, or document). The browser automatically calculates its SHA-256 cryptographic hash before storing it.
+      </p>
+
+      <div class="upload-box">
+        <p>Choose an evidence file to calculate its SHA-256 hash:</p>
+        <input type="file" id="fileUploadInput" style="margin-bottom: 1rem;">
+      </div>
+
+      <div class="upload-form-row">
+        <div class="form-group">
+          <label for="investigatorName">Investigator Name:</label>
+          <input type="text" id="investigatorName" class="form-input" value="Officer Alex Turner">
+        </div>
+        <div class="form-group">
+          <label for="caseNumber">Case Reference Number:</label>
+          <input type="text" id="caseNumber" class="form-input" value="CASE-2026-081">
+        </div>
+        <div class="form-group" style="justify-content: flex-end;">
+          <button type="button" class="btn btn-primary" onclick="handleEvidenceUpload()">
+            Store Evidence &amp; Generate Hash
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: EVIDENCE INVENTORY -->
+    <section class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+        <div>
+          <h2 class="card-title">2. Stored Evidence Records</h2>
+          <p class="card-subtitle" style="margin-bottom: 0;">
+            List of digital evidence items with recorded SHA-256 hashes and current integrity status.
+          </p>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="resetToSampleEvidence()">
+          Reload Sample Evidence
+        </button>
+      </div>
+
+      <div class="evidence-list" id="evidenceContainer">
+        <!-- Evidence cards loaded dynamically by JavaScript -->
+      </div>
+    </section>
+
+    <!-- SECTION 3: INTEGRITY VERIFICATION & TAMPER DEMONSTRATION -->
+    <section class="card">
+      <h2 class="card-title">3. Live Hash Verification &amp; Tamper Test</h2>
+      <p class="card-subtitle">
+        Demonstrate how cyber forensics proves evidence has not been modified. Compare the stored baseline hash against the current file hash.
+      </p>
+
+      <div class="upload-form-row" style="margin-bottom: 1.5rem;">
+        <div class="form-group">
+          <label for="selectEvidenceToTest">Select Evidence to Test:</label>
+          <select id="selectEvidenceToTest" class="form-input">
+            <!-- Populated via JavaScript -->
+          </select>
+        </div>
+        <div class="form-group" style="justify-content: flex-end; flex-direction: row; gap: 0.75rem; align-items: flex-end;">
+          <button class="btn btn-primary" onclick="verifyActiveItem()">
+            Verify Integrity Now
+          </button>
+          <button class="btn btn-danger" onclick="simulateTamperActiveItem()">
+            Simulate File Tampering
+          </button>
+          <button class="btn btn-secondary" onclick="restoreActiveItem()">
+            Restore Original File
+          </button>
+        </div>
+      </div>
+
+      <div class="comparison-box">
+        <div class="hash-block">
+          <div class="hash-label">Original Stored Hash (Database Baseline)</div>
+          <div class="hash-value" id="testBaselineHash">Select an item above</div>
+        </div>
+        <div class="hash-block">
+          <div class="hash-label">Current File Hash (Live Inspection)</div>
+          <div class="hash-value" id="testCurrentHash">Select an item above</div>
+        </div>
+      </div>
+
+      <div id="verdictDisplay" class="verdict-box intact">
+        ✓ Select an evidence item and click "Verify Integrity Now" to inspect.
+      </div>
+    </section>
+
+    <!-- NAVIGATION FOOTER -->
+    <div style="text-align: center; margin-top: 2rem;">
+      <a href="chain-of-custody.html" class="btn btn-secondary">
+        View Chain of Custody &amp; Security Log (Page 2) →
+      </a>
+    </div>
+  </main>
+
+  <div id="toastNotification" class="toast-msg"></div>
+
+  <script src="app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      initEvidencePage();
+    });
+  </script>
+</body>
+</html>

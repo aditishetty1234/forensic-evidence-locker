@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chain of Custody Log - Forensic Evidence Locker</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- SITE HEADER & NAVIGATION -->
+  <header class="site-header">
+    <div class="header-container">
+      <div>
+        <div class="brand-title">
+          Forensic Evidence Locker <span class="badge">Page 2 of 2</span>
+        </div>
+        <div class="brand-desc">
+          Cyber Forensics Lab Project: Tamper-Proof Audit Logging &amp; Custody Records
+        </div>
+      </div>
+      <nav class="main-nav">
+        <a href="index.html" class="nav-link">← Evidence Locker</a>
+        <a href="chain-of-custody.html" class="nav-link active">Chain of Custody Log</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page-container">
+    <!-- PAGE TITLE -->
+    <div class="page-intro">
+      <h1>Chain of Custody &amp; Security Audit Log</h1>
+      <p>
+        An append-only legal record documenting every action taken on evidence files, including uploads, integrity verifications, and timestamps.
+      </p>
+    </div>
+
+    <!-- STATS SUMMARY TILES -->
+    <div class="stats-row">
+      <div class="stat-tile">
+        <div class="stat-label">Total Evidence Items</div>
+        <div class="stat-number" id="statEvidenceCount">3</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-label">Logged Audit Events</div>
+        <div class="stat-number" id="statLogCount">5</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-label">Log Security</div>
+        <div class="stat-number" style="font-size: 1.25rem; color: var(--emerald);">Append-Only</div>
+      </div>
+    </div>
+
+    <!-- SECTION 1: CHAIN OF CUSTODY TABLE -->
+    <section class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h2 class="card-title">Legal Chain of Custody Table</h2>
+          <p class="card-subtitle" style="margin-bottom: 0;">
+            Every touchpoint is permanently recorded to satisfy legal admissibility requirements in court.
+          </p>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="btn btn-secondary btn-sm" onclick="exportCustodyCSV()">
+            Export Log as CSV
+          </button>
+          <button class="btn btn-primary btn-sm" onclick="window.print()">
+            Print Report
+          </button>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="clean-table">
+          <thead>
+            <tr>
+              <th style="width: 80px;">Log ID</th>
+              <th style="width: 170px;">Date &amp; Time (UTC)</th>
+              <th style="width: 170px;">Investigator</th>
+              <th style="width: 160px;">Action Taken</th>
+              <th>Target Evidence</th>
+              <th style="width: 140px;">Status</th>
+            </tr>
+          </thead>
+          <tbody id="custodyTableBody">
+            <!-- Populated dynamically via JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SECTION 2: 5 SECURITY FEATURES OVERVIEW FOR LAB REPORT -->
+    <section class="card">
+      <h2 class="card-title">Cyber Forensics Lab Project: 5 Security Controls Summary</h2>
+      <p class="card-subtitle">
+        Overview of the five security features implemented across this project for your laboratory submission.
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: 1rem;">
+        <div style="background-color: rgba(8, 13, 25, 0.6); padding: 1rem 1.25rem; border-radius: 6px; border-left: 3px solid var(--cyan);">
+          <strong style="color: var(--cyan); display: block; margin-bottom: 0.25rem;">
+            1. Cryptographic File Hashing (SHA-256)
+          </strong>
+          <span style="font-size: 0.88rem; color: var(--text-secondary);">
+            Automatically calculates a unique 256-bit cryptographic digest as soon as any evidence file is uploaded. If a single byte of the file is altered, the hash changes completely (avalanche effect), immediately exposing evidence tampering.
+          </span>
+        </div>
+
+        <div style="background-color: rgba(8, 13, 25, 0.6); padding: 1rem 1.25rem; border-radius: 6px; border-left: 3px solid var(--emerald);">
+          <strong style="color: var(--emerald); display: block; margin-bottom: 0.25rem;">
+            2. Immutable Audit Logging (Chain of Custody)
+          </strong>
+          <span style="font-size: 0.88rem; color: var(--text-secondary);">
+            Maintains an append-only log of every interaction (Upload, View, Verify, Transfer). Records timestamp, officer name, action performed, and hash snapshot. In a production database, SQL triggers prohibit <code>UPDATE</code> and <code>DELETE</code> operations.
+          </span>
+        </div>
+
+        <div style="background-color: rgba(8, 13, 25, 0.6); padding: 1rem 1.25rem; border-radius: 6px; border-left: 3px solid var(--amber);">
+          <strong style="color: var(--amber); display: block; margin-bottom: 0.25rem;">
+            3. Role-Based Access Control (RBAC)
+          </strong>
+          <span style="font-size: 0.88rem; color: var(--text-secondary);">
+            Restricts permissions based on user role to enforce least-privilege: Lead Investigators can ingest new evidence and transfer custody; Forensic Analysts can view and verify hashes; Auditors have read-only access to audit logs.
+          </span>
+        </div>
+
+        <div style="background-color: rgba(8, 13, 25, 0.6); padding: 1rem 1.25rem; border-radius: 6px; border-left: 3px solid var(--cyan);">
+          <strong style="color: var(--cyan); display: block; margin-bottom: 0.25rem;">
+            4. Input Validation &amp; File Sanitization
+          </strong>
+          <span style="font-size: 0.88rem; color: var(--text-secondary);">
+            Strips path traversal sequences like <code>../</code>, removes dangerous script characters, and isolates uploaded files outside the web root to block Remote Code Execution (RCE) and directory climbing attacks.
+          </span>
+        </div>
+
+        <div style="background-color: rgba(8, 13, 25, 0.6); padding: 1rem 1.25rem; border-radius: 6px; border-left: 3px solid #a855f7;">
+          <strong style="color: #c084fc; display: block; margin-bottom: 0.25rem;">
+            5. Time-Based One-Time Password (TOTP) 2FA
+          </strong>
+          <span style="font-size: 0.88rem; color: var(--text-secondary);">
+            Protects investigator accounts against stolen credentials by requiring a rolling 6-digit authentication token (e.g., Google Authenticator / Authy) before allowing access to evidence.
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- BACK TO EVIDENCE LOCKER -->
+    <div style="text-align: center; margin-top: 2rem;">
+      <a href="index.html" class="btn btn-secondary">
+        ← Return to Evidence Locker (Page 1)
+      </a>
+    </div>
+  </main>
+
+  <div id="toastNotification" class="toast-msg"></div>
+
+  <script src="app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      initCustodyPage();
+    });
+  </script>
+</body>
+</html>
