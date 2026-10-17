@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Access Control - Forensic Evidence Locker</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- SITE HEADER & 5-PAGE NAVIGATION -->
+  <header class="site-header">
+    <div class="header-container">
+      <div>
+        <div class="brand-title">
+          Forensic Evidence Locker <span class="badge">Page 4 of 5</span>
+        </div>
+        <div class="brand-desc">
+          Cyber Forensics Lab Project: 5 Security Controls System
+        </div>
+      </div>
+      <nav class="main-nav">
+        <a href="index.html" class="nav-link">1. Evidence Vault</a>
+        <a href="integrity-verifier.html" class="nav-link">2. Integrity Verifier</a>
+        <a href="chain-of-custody.html" class="nav-link">3. Chain of Custody</a>
+        <a href="rbac-console.html" class="nav-link active">4. Access Control</a>
+        <a href="security-gateway.html" class="nav-link">5. 2FA &amp; Sanitization</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page-container">
+    <!-- PAGE TITLE -->
+    <div class="page-intro">
+      <h1>
+        Role-Based Access Control (RBAC) Console
+        <span class="page-tag">Feature #3: Least-Privilege Gate</span>
+      </h1>
+      <p>
+        Enforce the Principle of Least Privilege (PoLP) across digital forensic operations. Restrict sensitive actions such as file ingestion, hash checking, and audit viewing based on the user's role.
+      </p>
+    </div>
+
+    <!-- SECTION 1: INTERACTIVE ROLE SWITCHER & PERMISSION SIMULATOR -->
+    <section class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h2 class="card-title">Active Role Simulator</h2>
+          <p class="card-subtitle" style="margin-bottom: 0;">
+            Switch the current user role below, then test forensic actions to observe permission gating in real time.
+          </p>
+        </div>
+        <div>
+          <span class="role-badge-pill" id="currentRoleBadge">Active Role: Lead Investigator</span>
+        </div>
+      </div>
+
+      <div class="upload-form-row" style="margin-bottom: 1.5rem;">
+        <div class="form-group">
+          <label for="rbacRoleSelector">Select Active Session Role:</label>
+          <select id="rbacRoleSelector" class="form-input">
+            <option value="Lead Investigator">Lead Investigator (Full Access)</option>
+            <option value="Forensic Analyst">Forensic Analyst (Verify &amp; Inspect Only)</option>
+            <option value="Compliance Auditor">Compliance Auditor (Read-Only Logs)</option>
+          </select>
+        </div>
+      </div>
+
+      <h3 style="font-size: 0.95rem; margin-bottom: 0.75rem; color: var(--text-primary);">
+        Test Permission Gating for Selected Role:
+      </h3>
+      <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.25rem;">
+        <button class="btn btn-secondary" onclick="testRbacAction('UPLOAD_EVIDENCE')">
+          Test: Ingest Evidence
+        </button>
+        <button class="btn btn-secondary" onclick="testRbacAction('VERIFY_INTEGRITY')">
+          Test: Verify Hash
+        </button>
+        <button class="btn btn-secondary" onclick="testRbacAction('SIMULATE_TAMPER')">
+          Test: Simulate Tamper
+        </button>
+        <button class="btn btn-secondary" onclick="testRbacAction('VIEW_LOGS')">
+          Test: Inspect Audit Logs
+        </button>
+        <button class="btn btn-secondary" onclick="testRbacAction('TRANSFER_CUSTODY')">
+          Test: Transfer Custody
+        </button>
+      </div>
+
+      <!-- SIMULATION FEEDBACK BOX -->
+      <div id="rbacFeedbackBox" class="verdict-box intact">
+        Select a test action above to verify role permissions.
+      </div>
+    </section>
+
+    <!-- SECTION 2: ACCESS CONTROL MATRIX TABLE -->
+    <section class="card">
+      <h2 class="card-title">Forensic Permissions Matrix</h2>
+      <p class="card-subtitle">
+        Standard security policy enforced across the forensic evidence repository:
+      </p>
+
+      <div class="table-responsive">
+        <table class="clean-table">
+          <thead>
+            <tr>
+              <th>Operation</th>
+              <th style="width: 220px;">Lead Investigator</th>
+              <th style="width: 220px;">Forensic Analyst</th>
+              <th style="width: 220px;">Compliance Auditor</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Ingest New Evidence &amp; Hash</strong></td>
+              <td class="perm-allow">✓ ALLOW</td>
+              <td class="perm-deny">✕ DENIED</td>
+              <td class="perm-deny">✕ DENIED</td>
+            </tr>
+            <tr>
+              <td><strong>Recalculate &amp; Verify Integrity</strong></td>
+              <td class="perm-allow">✓ ALLOW</td>
+              <td class="perm-allow">✓ ALLOW</td>
+              <td class="perm-deny">✕ DENIED</td>
+            </tr>
+            <tr>
+              <td><strong>Simulate File Alteration</strong></td>
+              <td class="perm-allow">✓ ALLOW</td>
+              <td class="perm-deny">✕ DENIED</td>
+              <td class="perm-deny">✕ DENIED</td>
+            </tr>
+            <tr>
+              <td><strong>Inspect Chain of Custody Logs</strong></td>
+              <td class="perm-allow">✓ ALLOW</td>
+              <td class="perm-allow">✓ ALLOW</td>
+              <td class="perm-allow">✓ ALLOW</td>
+            </tr>
+            <tr>
+              <td><strong>Export Court Certificate</strong></td>
+              <td class="perm-allow">✓ ALLOW</td>
+              <td class="perm-deny">✕ DENIED</td>
+              <td class="perm-allow">✓ ALLOW</td>
+            </tr>
+            <tr>
+              <td><strong>Transfer Evidence Custody</strong></td>
+              <td class="perm-allow">✓ ALLOW (Requires 2FA)</td>
+              <td class="perm-deny">✕ DENIED</td>
+              <td class="perm-deny">✕ DENIED</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- FOOTER NAVIGATION -->
+    <div class="page-footer-nav">
+      <a href="chain-of-custody.html" class="btn btn-secondary">← Back: 3. Chain of Custody</a>
+      <a href="security-gateway.html" class="btn btn-secondary">Next: 5. 2FA &amp; Sanitization Gate →</a>
+    </div>
+  </main>
+
+  <div id="toastNotification" class="toast-msg"></div>
+
+  <script src="app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      initRbacPage();
+    });
+  </script>
+</body>
+</html>

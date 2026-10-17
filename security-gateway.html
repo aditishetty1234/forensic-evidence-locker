@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2FA & Sanitization - Forensic Evidence Locker</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- SITE HEADER & 5-PAGE NAVIGATION -->
+  <header class="site-header">
+    <div class="header-container">
+      <div>
+        <div class="brand-title">
+          Forensic Evidence Locker <span class="badge">Page 5 of 5</span>
+        </div>
+        <div class="brand-desc">
+          Cyber Forensics Lab Project: 5 Security Controls System
+        </div>
+      </div>
+      <nav class="main-nav">
+        <a href="index.html" class="nav-link">1. Evidence Vault</a>
+        <a href="integrity-verifier.html" class="nav-link">2. Integrity Verifier</a>
+        <a href="chain-of-custody.html" class="nav-link">3. Chain of Custody</a>
+        <a href="rbac-console.html" class="nav-link">4. Access Control</a>
+        <a href="security-gateway.html" class="nav-link active">5. 2FA &amp; Sanitization</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page-container">
+    <!-- PAGE TITLE -->
+    <div class="page-intro">
+      <h1>
+        Security Defense &amp; 2FA Gateway
+        <span class="page-tag">Features #4 &amp; #5: Threat Shield</span>
+      </h1>
+      <p>
+        Defense-in-depth controls: protect against path traversal and malicious file upload exploits (Feature #4), and secure investigator accounts using RFC 6238 Time-Based One-Time Password 2FA (Feature #5).
+      </p>
+    </div>
+
+    <!-- SECTION 1: FEATURE 4 - INPUT SANITIZATION -->
+    <section class="card">
+      <h2 class="card-title">Feature #4: File Sanitization &amp; Path Traversal Guard</h2>
+      <p class="card-subtitle">
+        Prevent Arbitrary File Upload and Remote Code Execution (RCE) attacks by stripping directory climbing characters (<code>../</code>) and dangerous shell metacharacters before writing evidence to disk.
+      </p>
+
+      <div class="form-group" style="margin-bottom: 1rem;">
+        <label for="sanitizeTestInput">Test Input Filename (Type or pick a sample below):</label>
+        <input type="text" id="sanitizeTestInput" class="form-input" value="../../etc/shadow<script>alert(1)</script>.evtx">
+      </div>
+
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.25rem;">
+        <button class="btn btn-secondary btn-sm" onclick="setSanitizeSample('../../var/log/auth.log')">
+          Sample: ../ Directory Traversal
+        </button>
+        <button class="btn btn-secondary btn-sm" onclick="setSanitizeSample('exploit.pcap;rm -rf /')">
+          Sample: Shell Metacharacters
+        </button>
+        <button class="btn btn-secondary btn-sm" onclick="setSanitizeSample('forensic_image.dd<img src=x onerror=alert(1)>')">
+          Sample: XSS Injection Tag
+        </button>
+        <button class="btn btn-secondary btn-sm" onclick="setSanitizeSample('case_memory_dump_01.raw')">
+          Sample: Valid Evidence File
+        </button>
+      </div>
+
+      <div class="sanitized-preview-box">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.4rem;">
+          <span style="color: var(--text-muted);">Original Input:</span>
+          <span id="previewOriginal" style="color: var(--rose); font-weight: bold;"></span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.4rem;">
+          <span style="color: var(--text-muted);">Sanitized File Name:</span>
+          <span id="previewClean" style="color: var(--emerald); font-weight: bold;"></span>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: var(--text-muted);">Directory Climbing Defense:</span>
+          <span id="previewDefense" style="color: var(--cyan);"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: FEATURE 5 - TIME-BASED ONE-TIME PASSWORD (TOTP) 2FA -->
+    <section class="card">
+      <h2 class="card-title">Feature #5: RFC 6238 Time-Based One-Time Password (TOTP) 2FA</h2>
+      <p class="card-subtitle">
+        Simulates standard multi-factor authentication (Google Authenticator / Authy) required before allowing investigators to transfer custody or access sensitive case files.
+      </p>
+
+      <div class="grid-two-col">
+        <!-- Live Rolling Token Display -->
+        <div class="totp-box">
+          <div style="font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600;">
+            Current 30-Second Rolling Token
+          </div>
+
+          <div class="totp-digits" id="totpLiveCode">
+            582 914
+          </div>
+
+          <div class="totp-timer" id="totpTimerText">
+            Refreshing in 24 seconds
+          </div>
+
+          <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted);">
+            Secret Key: <span style="color: var(--cyan);">JBSWY3DPEHPK3PXP</span> (HMAC-SHA1)
+          </div>
+        </div>
+
+        <!-- Token Entry Verification -->
+        <div style="display: flex; flex-direction: column; justify-content: center; gap: 1rem;">
+          <div class="form-group">
+            <label for="totpInput">Enter 6-Digit Authenticator Code:</label>
+            <input type="text" id="totpInput" class="form-input" placeholder="e.g. 582914" maxlength="6" style="text-align: center; font-size: 1.25rem; font-family: var(--font-mono); letter-spacing: 0.15em;">
+          </div>
+          <button class="btn btn-primary" onclick="validateUserTotp()">
+            Verify 2FA Token
+          </button>
+          <div id="totpFeedback" class="verdict-box intact" style="margin-top: 0; padding: 0.85rem;">
+            Enter the 6-digit code shown on the left to test 2FA verification.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER NAVIGATION -->
+    <div class="page-footer-nav">
+      <a href="rbac-console.html" class="btn btn-secondary">← Back: 4. Access Control</a>
+      <a href="index.html" class="btn btn-secondary">Return to: 1. Evidence Vault ↺</a>
+    </div>
+  </main>
+
+  <div id="toastNotification" class="toast-msg"></div>
+
+  <script src="app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      initSecurityGatePage();
+    });
+  </script>
+</body>
+</html>

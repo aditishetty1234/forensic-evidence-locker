@@ -1,10 +1,15 @@
 /**
- * FORENSIC EVIDENCE LOCKER - APP LOGIC
- * Shared between Page 1 (index.html) and Page 2 (chain-of-custody.html)
+ * FORENSIC EVIDENCE LOCKER - APPLICATION LOGIC
+ * Shared between all 5 web pages:
+ * Page 1: index.html (Evidence Vault)
+ * Page 2: integrity-verifier.html (Integrity Lab)
+ * Page 3: chain-of-custody.html (Audit Ledger)
+ * Page 4: rbac-console.html (Access Control)
+ * Page 5: security-gateway.html (2FA & Sanitization)
  */
 
 // ----------------------------------------------------------------------------
-// DEFAULT DATA & LOCAL STORAGE MANAGEMENT
+// 1. DEFAULT DATA & LOCAL STORAGE MANAGEMENT
 // ----------------------------------------------------------------------------
 
 const DEFAULT_EVIDENCE = [
@@ -117,23 +122,21 @@ function appendCustodyLog(officer, action, target, status) {
 }
 
 // ----------------------------------------------------------------------------
-// REAL WEB CRYPTO SHA-256 HASHING
+// 2. CRYPTOGRAPHIC SHA-256 (WEB CRYPTO API)
 // ----------------------------------------------------------------------------
 
 async function calculateSHA256(arrayBuffer) {
   const hashBuffer = await window.crypto.subtle.digest('SHA-256', arrayBuffer);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hexHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  return hexHash;
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 // ----------------------------------------------------------------------------
-// PAGE 1: EVIDENCE LOCKER (index.html)
+// 3. PAGE 1: EVIDENCE VAULT (index.html)
 // ----------------------------------------------------------------------------
 
 function initEvidencePage() {
   renderEvidenceList();
-  populateTestSelect();
 }
 
 function renderEvidenceList() {
@@ -162,9 +165,9 @@ function renderEvidenceList() {
       </div>
 
       <div class="evidence-actions">
-        <button class="btn btn-secondary btn-sm" onclick="selectItemForTesting('${item.id}')">
-          Inspect in Verification Test
-        </button>
+        <a href="integrity-verifier.html" class="btn btn-secondary btn-sm">
+          Inspect in Verifier Lab →
+        </a>
         <button class="btn btn-danger btn-sm" onclick="quickTamper('${item.id}')">
           Simulate Tampering
         </button>
@@ -174,6 +177,71 @@ function renderEvidenceList() {
       </div>
     </div>
   `).join('');
+}
+
+async function handleEvidenceUpload() {
+  const fileInput = document.getElementById('fileUploadInput');
+  const officerInput = document.getElementById('investigatorName');
+  const caseInput = document.getElementById('caseNumber');
+
+  if (!fileInput.files || fileInput.files.length === 0) {
+    showToast('Please select a file to ingest first.');
+    return;
+  }
+
+  const file = fileInput.files[0];
+  const officer = officerInput.value.trim() || 'Officer Alex Turner';
+  const caseNum = caseInput.value.trim() || 'CASE-2026-081';
+
+  showToast(`Generating SHA-256 for "${file.name}"...`);
+
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const hash = await calculateSHA256(arrayBuffer);
+
+    const evidence = getStoredEvidence();
+    const newId = `EVD-00${evidence.length + 1}`;
+
+    const newEvidenceItem = {
+      id: newId,
+      name: file.name,
+      caseNum: caseNum,
+      officer: officer,
+      uploadedAt: new Date().toISOString().replace('T', ' ').substring(0, 16) + ' UTC',
+      baselineHash: hash,
+      currentHash: hash,
+      isTampered: false
+    };
+
+    evidence.unshift(newEvidenceItem);
+    saveStoredEvidence(evidence);
+
+    appendCustodyLog(officer, 'Evidence Ingestion', `${newId} (${file.name})`, 'Hash Sealed');
+
+    renderEvidenceList();
+    fileInput.value = '';
+    showToast(`File "${file.name}" successfully ingested and hashed!`);
+  } catch (err) {
+    console.error(err);
+    showToast('Error hashing file: ' + err.message);
+  }
+}
+
+function resetToSampleEvidence() {
+  if (confirm('Reset evidence locker to default sample items?')) {
+    saveStoredEvidence(DEFAULT_EVIDENCE);
+    saveStoredLogs(DEFAULT_LOGS);
+    renderEvidenceList();
+    showToast('Evidence locker reset to sample data.');
+  }
+}
+
+// ----------------------------------------------------------------------------
+// 4. PAGE 2: INTEGRITY VERIFIER (integrity-verifier.html)
+// ----------------------------------------------------------------------------
+
+function initVerifierPage() {
+  populateTestSelect();
 }
 
 function populateTestSelect() {
@@ -211,72 +279,8 @@ function updateTestBoxes() {
       verdict.innerHTML = '✓ INTEGRITY VERIFIED: Hashes match perfectly. Evidence is authentic and unmodified.';
     } else {
       verdict.className = 'verdict-box altered';
-      verdict.innerHTML = '✕ INTEGRITY BREACH: The current hash does NOT match the stored baseline hash! Evidence has been altered.';
+      verdict.innerHTML = '✕ CRITICAL ALERT: The live file hash does NOT match the stored baseline! Tampering detected.';
     }
-  }
-}
-
-function selectItemForTesting(evidenceId) {
-  const select = document.getElementById('selectEvidenceToTest');
-  if (select) {
-    select.value = evidenceId;
-    updateTestBoxes();
-    select.scrollIntoView({ behavior: 'smooth' });
-  }
-}
-
-async function handleEvidenceUpload() {
-  const fileInput = document.getElementById('fileUploadInput');
-  const officerInput = document.getElementById('investigatorName');
-  const caseInput = document.getElementById('caseNumber');
-
-  if (!fileInput.files || fileInput.files.length === 0) {
-    showToast('Please select a file to upload first.');
-    return;
-  }
-
-  const file = fileInput.files[0];
-  const officer = officerInput.value.trim() || 'Officer Alex Turner';
-  const caseNum = caseInput.value.trim() || 'CASE-2026-081';
-
-  showToast(`Calculating SHA-256 for "${file.name}"...`);
-
-  try {
-    const arrayBuffer = await file.arrayBuffer();
-    const hash = await calculateSHA256(arrayBuffer);
-
-    const evidence = getStoredEvidence();
-    const newId = `EVD-00${evidence.length + 1}`;
-
-    const newEvidenceItem = {
-      id: newId,
-      name: file.name,
-      caseNum: caseNum,
-      officer: officer,
-      uploadedAt: new Date().toISOString().replace('T', ' ').substring(0, 16) + ' UTC',
-      baselineHash: hash,
-      currentHash: hash,
-      isTampered: false
-    };
-
-    evidence.unshift(newEvidenceItem);
-    saveStoredEvidence(evidence);
-
-    // Record in Chain of Custody Log
-    appendCustodyLog(officer, 'Evidence Ingestion', `${newId} (${file.name})`, 'Hash Sealed');
-
-    // Refresh UI
-    renderEvidenceList();
-    populateTestSelect();
-    selectItemForTesting(newId);
-
-    // Reset file input
-    fileInput.value = '';
-
-    showToast(`File "${file.name}" saved with SHA-256 hash!`);
-  } catch (err) {
-    console.error(err);
-    showToast('Error generating cryptographic hash: ' + err.message);
   }
 }
 
@@ -308,15 +312,15 @@ function quickTamper(evidenceId) {
   const item = evidence.find(i => i.id === evidenceId);
   if (!item) return;
 
-  // Modify hash
   item.currentHash = 'b90e872c' + item.baselineHash.substring(8, 56) + 'fa1100bc';
   item.isTampered = true;
 
   saveStoredEvidence(evidence);
   appendCustodyLog('Officer Alex Turner', 'Simulated Tampering', `${item.id} (${item.name})`, 'Tamper Simulated');
 
-  renderEvidenceList();
-  updateTestBoxes();
+  if (document.getElementById('evidenceContainer')) renderEvidenceList();
+  if (document.getElementById('selectEvidenceToTest')) updateTestBoxes();
+
   showToast(`Simulated tampering on "${item.name}". Hash modified!`);
 }
 
@@ -336,23 +340,14 @@ function quickRestore(evidenceId) {
   saveStoredEvidence(evidence);
   appendCustodyLog('Officer Alex Turner', 'Restore Evidence File', `${item.id} (${item.name})`, 'Restored');
 
-  renderEvidenceList();
-  updateTestBoxes();
-  showToast(`Restored original authentic hash for "${item.name}".`);
-}
+  if (document.getElementById('evidenceContainer')) renderEvidenceList();
+  if (document.getElementById('selectEvidenceToTest')) updateTestBoxes();
 
-function resetToSampleEvidence() {
-  if (confirm('Reset evidence locker to default sample items?')) {
-    saveStoredEvidence(DEFAULT_EVIDENCE);
-    saveStoredLogs(DEFAULT_LOGS);
-    renderEvidenceList();
-    populateTestSelect();
-    showToast('Evidence locker reset to sample data.');
-  }
+  showToast(`Restored authentic baseline hash for "${item.name}".`);
 }
 
 // ----------------------------------------------------------------------------
-// PAGE 2: CHAIN OF CUSTODY (chain-of-custody.html)
+// 5. PAGE 3: CHAIN OF CUSTODY (chain-of-custody.html)
 // ----------------------------------------------------------------------------
 
 function initCustodyPage() {
@@ -422,7 +417,149 @@ function exportCustodyCSV() {
 }
 
 // ----------------------------------------------------------------------------
-// TOAST NOTIFICATIONS
+// 6. PAGE 4: RBAC CONSOLE (rbac-console.html)
+// ----------------------------------------------------------------------------
+
+let currentActiveRole = 'Lead Investigator';
+
+function initRbacPage() {
+  const selector = document.getElementById('rbacRoleSelector');
+  if (!selector) return;
+
+  selector.value = currentActiveRole;
+  selector.addEventListener('change', (e) => {
+    currentActiveRole = e.target.value;
+    document.getElementById('currentRoleBadge').textContent = `Active Role: ${currentActiveRole}`;
+    showToast(`Role switched to: ${currentActiveRole}`);
+  });
+}
+
+function testRbacAction(actionKey) {
+  const feedback = document.getElementById('rbacFeedbackBox');
+  if (!feedback) return;
+
+  const permissions = {
+    'UPLOAD_EVIDENCE': {
+      'Lead Investigator': { allow: true, reason: 'Lead Investigators hold full evidentiary ingestion rights.' },
+      'Forensic Analyst': { allow: false, reason: 'Forensic Analysts have read/verify rights only (Least Privilege Policy).' },
+      'Compliance Auditor': { allow: false, reason: 'Auditors are restricted from creating or modifying evidence.' }
+    },
+    'VERIFY_INTEGRITY': {
+      'Lead Investigator': { allow: true, reason: 'Lead Investigators can run cryptographic verifications.' },
+      'Forensic Analyst': { allow: true, reason: 'Forensic Analysts are authorized to compute & verify hashes.' },
+      'Compliance Auditor': { allow: false, reason: 'Auditors inspect custody logs, not active evidence files.' }
+    },
+    'SIMULATE_TAMPER': {
+      'Lead Investigator': { allow: true, reason: 'Authorized for security research and vulnerability demonstration.' },
+      'Forensic Analyst': { allow: false, reason: 'Analysts cannot execute file alteration routines.' },
+      'Compliance Auditor': { allow: false, reason: 'Strictly prohibited from tampering with evidence.' }
+    },
+    'VIEW_LOGS': {
+      'Lead Investigator': { allow: true, reason: 'Access granted to audit trail.' },
+      'Forensic Analyst': { allow: true, reason: 'Access granted to audit trail.' },
+      'Compliance Auditor': { allow: true, reason: 'Primary responsibility: independent compliance review.' }
+    },
+    'TRANSFER_CUSTODY': {
+      'Lead Investigator': { allow: true, reason: 'Permitted upon secondary TOTP 2FA approval.' },
+      'Forensic Analyst': { allow: false, reason: 'Cannot transfer legal custody between agencies.' },
+      'Compliance Auditor': { allow: false, reason: 'Cannot transfer custody.' }
+    }
+  };
+
+  const check = permissions[actionKey][currentActiveRole];
+  if (check.allow) {
+    feedback.className = 'verdict-box intact';
+    feedback.innerHTML = `✓ <strong>PERMISSION GRANTED</strong> for <code>${actionKey}</code>.<br><span style="font-size: 0.85rem; font-weight: normal;">${check.reason}</span>`;
+  } else {
+    feedback.className = 'verdict-box altered';
+    feedback.innerHTML = `✕ <strong>ACCESS DENIED</strong> for <code>${actionKey}</code> under <strong>${currentActiveRole}</strong>.<br><span style="font-size: 0.85rem; font-weight: normal;">${check.reason}</span>`;
+  }
+}
+
+// ----------------------------------------------------------------------------
+// 7. PAGE 5: 2FA & SANITIZATION (security-gateway.html)
+// ----------------------------------------------------------------------------
+
+let currentTotp = '582914';
+
+function initSecurityGatePage() {
+  setupSanitizationInspector();
+  startTotpClock();
+}
+
+function setupSanitizationInspector() {
+  const input = document.getElementById('sanitizeTestInput');
+  if (!input) return;
+
+  const runSanitization = () => {
+    const raw = input.value;
+    let clean = raw.replace(/(\.\.[\/\\])+/g, ''); // strip ../
+    clean = clean.replace(/[<>:"/\\|?*]/g, '_');    // strip illegal chars
+    clean = clean.replace(/<[^>]*>?/gm, '');       // strip HTML tags
+
+    const hasTraversal = /(\.\.[\/\\])+/g.test(raw);
+
+    document.getElementById('previewOriginal').textContent = raw || '(empty)';
+    document.getElementById('previewClean').textContent = clean || 'sanitized_file.bin';
+    document.getElementById('previewDefense').textContent = hasTraversal 
+      ? 'BLOCKED (Path climbing stripped)' 
+      : 'CLEAN (Safe destination path)';
+    document.getElementById('previewDefense').style.color = hasTraversal ? 'var(--emerald)' : 'var(--cyan)';
+  };
+
+  input.addEventListener('input', runSanitization);
+  runSanitization();
+}
+
+function setSanitizeSample(sampleText) {
+  const input = document.getElementById('sanitizeTestInput');
+  if (input) {
+    input.value = sampleText;
+    input.dispatchEvent(new Event('input'));
+  }
+}
+
+function startTotpClock() {
+  const updateTotp = () => {
+    const now = Math.floor(Date.now() / 1000);
+    const windowSeconds = 30;
+    const timeStep = Math.floor(now / windowSeconds);
+    const remaining = windowSeconds - (now % windowSeconds);
+
+    const pseudoCode = Math.floor(Math.abs(Math.sin(timeStep * 8888)) * 900000 + 100000).toString();
+    currentTotp = pseudoCode;
+
+    const codeEl = document.getElementById('totpLiveCode');
+    const timerEl = document.getElementById('totpTimerText');
+
+    if (codeEl) codeEl.textContent = `${pseudoCode.substring(0, 3)} ${pseudoCode.substring(3)}`;
+    if (timerEl) timerEl.textContent = `Refreshing in ${remaining} seconds`;
+  };
+
+  updateTotp();
+  setInterval(updateTotp, 1000);
+}
+
+function validateUserTotp() {
+  const input = document.getElementById('totpInput');
+  const feedback = document.getElementById('totpFeedback');
+  if (!input || !feedback) return;
+
+  const userCode = input.value.trim().replace(/\s+/g, '');
+  if (userCode === currentTotp) {
+    feedback.className = 'verdict-box intact';
+    feedback.innerHTML = '✓ <strong>2FA TOKEN ACCEPTED</strong>: Time-synchronized token verified. Sensitive custody operation authorized.';
+    showToast('2FA Verification Successful!');
+    appendCustodyLog('Officer Alex Turner', '2FA Authentication', 'Session Gate', 'Authorized (TOTP Valid)');
+  } else {
+    feedback.className = 'verdict-box altered';
+    feedback.innerHTML = `✕ <strong>INVALID CODE</strong>: The token entered does not match current rolling window code (${currentTotp.substring(0,3)} ${currentTotp.substring(3)}).`;
+    showToast('2FA Verification Failed');
+  }
+}
+
+// ----------------------------------------------------------------------------
+// 8. TOAST NOTIFICATIONS
 // ----------------------------------------------------------------------------
 
 function showToast(msg) {
