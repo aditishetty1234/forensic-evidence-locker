@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Secure Access Gate - Forensic Evidence Locker</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="access.css">
+</head>
+<body>
+
+  <!-- SITE HEADER (no page navigation until the user has chosen a role) -->
+  <header class="site-header">
+    <div class="header-container">
+      <div>
+        <div class="brand-title">
+          Forensic Evidence Locker <span class="badge">Access Gate</span>
+        </div>
+        <div class="brand-desc">
+          Cyber Forensics Lab Project: 5 Security Controls System
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="page-container">
+    <!-- PAGE TITLE -->
+    <div class="page-intro">
+      <h1>
+        Secure Access Gate
+        <span class="page-tag">Feature #3: Least-Privilege Gate</span>
+      </h1>
+      <p>
+        Identify your role to enter the evidence locker. Following the Principle of Least Privilege (PoLP), your role decides which pages you can open and which forensic actions you may perform. Everything else stays locked.
+      </p>
+    </div>
+
+    <!-- SECTION 1: ROLE SELECTION -->
+    <section class="card">
+      <h2 class="card-title">1. Who are you?</h2>
+      <p class="card-subtitle">
+        Choose the role you are working under today. Your name is recorded against every action in the chain of custody log.
+      </p>
+
+      <div id="loginExisting" class="ac-login-existing"></div>
+
+      <div id="roleCards" class="ac-role-cards">
+        <!-- Rendered dynamically via app.js -->
+      </div>
+
+      <div class="ac-login-row">
+        <div class="form-group">
+          <label for="loginName">Your Name:</label>
+          <input type="text" id="loginName" class="form-input" maxlength="40" placeholder="Enter your full name" required onkeydown="if (event.key === 'Enter') submitLogin()">
+        </div>
+        <div class="form-group" style="flex: 0 0 auto;">
+          <button type="button" id="loginSubmit" class="btn btn-primary" onclick="submitLogin()" disabled>
+            Enter Evidence Locker →
+          </button>
+        </div>
+      </div>
+
+      <div id="loginSummary" class="ac-login-summary">Select your role to continue.</div>
+    </section>
+
+    <!-- SECTION 2: ACCESS CONTROL MATRIX TABLE -->
+    <section class="card">
+      <h2 class="card-title">Forensic Permissions Matrix</h2>
+      <p class="card-subtitle">
+        Security policy enforced across the whole evidence repository. Your chosen role is highlighted.
+      </p>
+
+      <div class="table-responsive">
+        <table class="clean-table">
+          <thead>
+            <tr id="matrixHead">
+              <th>Operation</th>
+              <th data-role="Lead Investigator" style="width: 200px;">Lead Investigator</th>
+              <th data-role="Forensic Analyst" style="width: 200px;">Forensic Analyst</th>
+              <th data-role="Compliance Auditor" style="width: 200px;">Compliance Auditor</th>
+            </tr>
+          </thead>
+          <tbody id="matrixBody">
+            <!-- Rendered dynamically via app.js -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <div id="toastNotification" class="toast-msg"></div>
+
+  <script src="app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      initLoginPage();
+    });
+  </script>
+</body>
+</html>
