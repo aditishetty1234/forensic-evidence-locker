@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Access Control - Forensic Evidence Locker</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="access.css">
 </head>
 <body>
 
@@ -58,7 +59,7 @@
       <div class="upload-form-row" style="margin-bottom: 1.5rem;">
         <div class="form-group">
           <label for="rbacRoleSelector">Select Active Session Role:</label>
-          <select id="rbacRoleSelector" class="form-input">
+          <select id="rbacRoleSelector" class="form-input" onchange="switchRbacRole(this.value)">
             <option value="Lead Investigator">Lead Investigator (Full Access)</option>
             <option value="Forensic Analyst">Forensic Analyst (Verify &amp; Inspect Only)</option>
             <option value="Compliance Auditor">Compliance Auditor (Read-Only Logs)</option>
@@ -102,52 +103,15 @@
 
       <div class="table-responsive">
         <table class="clean-table">
-          <thead>
+          <thead id="rbacMatrixHead">
             <tr>
               <th>Operation</th>
-              <th style="width: 220px;">Lead Investigator</th>
-              <th style="width: 220px;">Forensic Analyst</th>
-              <th style="width: 220px;">Compliance Auditor</th>
+              <th data-role="Lead Investigator" style="width: 200px;">Lead Investigator</th>
+              <th data-role="Forensic Analyst" style="width: 200px;">Forensic Analyst</th>
+              <th data-role="Compliance Auditor" style="width: 200px;">Compliance Auditor</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td><strong>Ingest New Evidence &amp; Hash</strong></td>
-              <td class="perm-allow">✓ ALLOW</td>
-              <td class="perm-deny">✕ DENIED</td>
-              <td class="perm-deny">✕ DENIED</td>
-            </tr>
-            <tr>
-              <td><strong>Recalculate &amp; Verify Integrity</strong></td>
-              <td class="perm-allow">✓ ALLOW</td>
-              <td class="perm-allow">✓ ALLOW</td>
-              <td class="perm-deny">✕ DENIED</td>
-            </tr>
-            <tr>
-              <td><strong>Simulate File Alteration</strong></td>
-              <td class="perm-allow">✓ ALLOW</td>
-              <td class="perm-deny">✕ DENIED</td>
-              <td class="perm-deny">✕ DENIED</td>
-            </tr>
-            <tr>
-              <td><strong>Inspect Chain of Custody Logs</strong></td>
-              <td class="perm-allow">✓ ALLOW</td>
-              <td class="perm-allow">✓ ALLOW</td>
-              <td class="perm-allow">✓ ALLOW</td>
-            </tr>
-            <tr>
-              <td><strong>Export Court Certificate</strong></td>
-              <td class="perm-allow">✓ ALLOW</td>
-              <td class="perm-deny">✕ DENIED</td>
-              <td class="perm-allow">✓ ALLOW</td>
-            </tr>
-            <tr>
-              <td><strong>Transfer Evidence Custody</strong></td>
-              <td class="perm-allow">✓ ALLOW (Requires 2FA)</td>
-              <td class="perm-deny">✕ DENIED</td>
-              <td class="perm-deny">✕ DENIED</td>
-            </tr>
-          </tbody>
+          <tbody id="rbacMatrixBody"></tbody>
         </table>
       </div>
     </section>
@@ -155,7 +119,7 @@
     <!-- FOOTER NAVIGATION -->
     <div class="page-footer-nav">
       <a href="chain-of-custody.html" class="btn btn-secondary">← Back: 3. Chain of Custody</a>
-      <a href="security-gateway.html" class="btn btn-secondary">Next: 5. 2FA &amp; Sanitization Gate →</a>
+      <a href="security-gateway.html" class="btn btn-secondary">Next: 5. 2FA &amp; Sanitization →</a>
     </div>
   </main>
 

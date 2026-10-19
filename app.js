@@ -5,7 +5,8 @@
  * Page 1: index.html (Evidence Vault)
  * Page 2: integrity-verifier.html (Integrity Lab)
  * Page 3: chain-of-custody.html (Audit Ledger)
- * Page 4: security-gateway.html (2FA & Sanitization)
+ * Page 4: rbac-console.html (Access Control simulator)
+ * Page 5: security-gateway.html (2FA & Sanitization)
  */
 
 // ----------------------------------------------------------------------------
@@ -21,6 +22,7 @@ const PAGES = {
   vault:    { file: 'index.html',              label: 'Evidence Vault' },
   verifier: { file: 'integrity-verifier.html', label: 'Integrity Verifier' },
   custody:  { file: 'chain-of-custody.html',   label: 'Chain of Custody' },
+  rbac:     { file: 'rbac-console.html',       label: 'Access Control' },
   security: { file: 'security-gateway.html',   label: '2FA & Sanitization' }
 };
 
@@ -30,21 +32,21 @@ const ROLE_CONFIG = {
     tagline: 'Full Access',
     summary: 'Owns the case. Can ingest, verify, test tamper detection, export certificates and transfer custody.',
     landing: 'index.html',
-    pages: ['vault', 'verifier', 'custody', 'security'],
+    pages: ['vault', 'verifier', 'custody', 'rbac', 'security'],
     pageDenyReason: {}
   },
   'Forensic Analyst': {
     tagline: 'Verify & Inspect Only',
     summary: 'Examines evidence and verifies hashes. Cannot add, alter or hand over evidence.',
     landing: 'index.html',
-    pages: ['vault', 'verifier', 'custody', 'security'],
+    pages: ['vault', 'verifier', 'custody', 'rbac', 'security'],
     pageDenyReason: {}
   },
   'Compliance Auditor': {
     tagline: 'Read-Only Logs',
     summary: 'Independent reviewer. Works with the audit trail only, never with live evidence files.',
     landing: 'chain-of-custody.html',
-    pages: ['custody', 'security'],
+    pages: ['custody', 'rbac', 'security'],
     pageDenyReason: {
       vault: 'Auditors inspect custody logs, not active evidence files.',
       verifier: 'Auditors inspect custody logs, not active evidence files.'
@@ -855,6 +857,65 @@ function printCourtCertificate() {
   renderCustodyTable();
   updateCustodyStats();
   window.print();
+}
+
+// ----------------------------------------------------------------------------
+// 4. ACCESS CONTROL CONSOLE (rbac-console.html)
+// ----------------------------------------------------------------------------
+function initRbacPage() {
+  if (!guardPage('rbac')) return;
+  renderRbacPage();
+}
+
+function renderRbacPage() {
+  const role = currentRole();
+  const badge = document.getElementById('currentRoleBadge');
+  if (badge) badge.textContent = `Active Role: ${role}`;
+
+  const sel = document.getElementById('rbacRoleSelector');
+  if (sel) sel.value = role;
+
+  const body = document.getElementById('rbacMatrixBody');
+  if (body) {
+    const roles = Object.keys(ROLE_CONFIG);
+    body.innerHTML = Object.keys(PERMISSION_MATRIX).map(k => `
+      <tr>
+        <td><strong>${esc(PERMISSION_MATRIX[k].label)}</strong></td>
+        ${roles.map(r => {
+          const ok = PERMISSION_MATRIX[k].roles[r].allow;
+          const hl = r === role ? ' ac-col-active' : '';
+          return `<td class="${ok ? 'perm-allow' : 'perm-deny'}${hl}">${ok ? '&#10003; ALLOW' : '&#10005; DENIED'}</td>`;
+        }).join('')}
+      </tr>
+    `).join('');
+  }
+  document.querySelectorAll('#rbacMatrixHead th[data-role]').forEach(th => {
+    th.classList.toggle('ac-col-active', th.dataset.role === role);
+  });
+}
+
+// Switch the active role for this tab (keeps the same user name).
+function switchRbacRole(newRole) {
+  const session = getSession();
+  if (!session || !ROLE_CONFIG[newRole] || session.role === newRole) return;
+  const oldRole = session.role;
+  setSession({ name: session.name, role: newRole, since: Date.now() });
+  appendCustodyLog(`${session.name} (${newRole})`, 'Role Switch', `${oldRole} -> ${newRole}`, 'Access Granted');
+  window.location.reload();
+}
+
+// Try one permission as the current role and show the result (denials are logged).
+function testRbacAction(permKey) {
+  const box = document.getElementById('rbacFeedbackBox');
+  const entry = PERMISSION_MATRIX[permKey];
+  if (!box || !entry) return;
+
+  const role = currentRole();
+  const allowed = requirePerm(permKey);
+  box.className = 'verdict-box ' + (allowed ? 'intact' : 'altered');
+  box.innerHTML = allowed
+    ? `<strong>&#10003; ALLOWED</strong> &mdash; ${esc(role)} may: ${esc(entry.label)}.<br>${esc(entry.roles[role].reason)}`
+    : `<strong>&#10005; ACCESS DENIED</strong> &mdash; ${esc(role)} may not: ${esc(entry.label)}.<br>${esc(entry.roles[role].reason)}<br><em>This attempt was written to the chain of custody log.</em>`;
 }
 
 // ----------------------------------------------------------------------------

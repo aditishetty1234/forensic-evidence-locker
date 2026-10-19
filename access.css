@@ -1,0 +1,199 @@
+/* ==========================================================================
+   ACCESS CONTROL (Feature #3: Least-Privilege Gate)
+   Styles for login.html, the signed-in session bar, locked links/buttons
+   and the Access Denied panel. Uses the colour variables from styles.css.
+   ========================================================================== */
+
+/* ---------- Session bar (shown under the header on every inner page) ------ */
+
+.ac-session-bar {
+  background-color: rgba(6, 182, 212, 0.07);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.ac-session-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0.6rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.ac-session-who {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+}
+
+.ac-session-who strong {
+  color: var(--text-primary);
+}
+
+.ac-session-meta {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.ac-session-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.ac-role-pill {
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.2rem 0.7rem;
+  border-radius: 9999px;
+  background-color: rgba(6, 182, 212, 0.15);
+  color: var(--cyan);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+}
+
+/* ---------- Locked links and controls ------------------------------------ */
+
+a.ac-locked {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+a.ac-locked::before {
+  content: "\1F512";
+  font-size: 0.8em;
+  margin-right: 0.3rem;
+}
+
+.ac-perm-locked:disabled,
+button.ac-perm-locked {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.ac-lock-note {
+  display: block;
+  margin-bottom: 1rem;
+  padding: 0.7rem 1rem;
+  font-size: 0.85rem;
+  border-radius: var(--radius);
+  color: #fda4af;
+  background-color: rgba(244, 63, 94, 0.08);
+  border: 1px solid rgba(244, 63, 94, 0.3);
+}
+
+/* ---------- Access Denied panel ------------------------------------------ */
+
+.ac-denied {
+  text-align: center;
+  padding: 3rem 1.5rem;
+}
+
+.ac-denied-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.ac-denied h1 {
+  font-size: 1.6rem;
+  color: var(--rose);
+  margin-bottom: 0.75rem;
+}
+
+.ac-denied p {
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.ac-denied-reason {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.ac-denied-actions {
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ---------- Login page ---------------------------------------------------- */
+
+.ac-login-existing {
+  display: none;
+  margin-bottom: 1.25rem;
+  padding: 0.7rem 1rem;
+  font-size: 0.88rem;
+  border-radius: var(--radius);
+  color: var(--cyan);
+  background-color: rgba(6, 182, 212, 0.08);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+}
+
+.ac-role-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 1.25rem 0;
+}
+
+.ac-role-choice {
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.6rem 1.4rem;
+  border-radius: 9999px;
+  border: 1.5px solid var(--border-color);
+  background-color: var(--bg-input);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.ac-role-choice:hover {
+  border-color: var(--border-focus);
+  color: var(--text-primary);
+}
+
+.ac-role-choice.selected {
+  border-color: var(--cyan);
+  background-color: rgba(6, 182, 212, 0.15);
+  color: var(--cyan);
+  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.15);
+}
+
+.ac-login-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.ac-login-row .form-group {
+  flex: 1 1 260px;
+}
+
+.ac-login-summary {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Highlight the chosen role's column in the matrix */
+.clean-table th.ac-col-active,
+.clean-table td.ac-col-active {
+  background-color: rgba(6, 182, 212, 0.1);
+}
+
+/* Allow / deny colours inside the matrix (beats the .clean-table td colour) */
+.clean-table td.perm-allow { color: var(--emerald); font-weight: 700; }
+.clean-table td.perm-deny  { color: var(--rose); font-weight: 700; }
